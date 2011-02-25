@@ -7,9 +7,13 @@
 	<data type="array">
 		<languageKey index="default" type="array">
 			<label index="label_submit">Send</label>
+			<label index="error_required">The field: %1$s is required.</label>
+			<label index="error_allreadyInDB">Sorry. The given email address was allready registered in our database.</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="label_submit">Absenden</label>
+			<label index="error_required">Das Feld: %1$s muss ausgefüllt werden.</label>
+			<label index="error_allreadyInDB">Sorry, aber die eingetragene E-Mail-Adresse wurde in unserem System bereits hinterlegt.</label>
 		</languageKey>
 	</data>
 </T3locallang>

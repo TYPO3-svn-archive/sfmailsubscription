@@ -47,7 +47,12 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 	var $language = 'default';  // Set language
 	var $templateFile = '/res/pi1_template.html';
 	var $template = array();
-	var $tempFields = 'first_name,email,telephone,www,address';
+	var $error = false;
+
+	var $requiredFieldsForTable = array(
+		'fe_users' => 'username,password,usergroup',
+		'tt_address' => ''
+	);
 	
 	
 	/**
@@ -78,24 +83,19 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		
 		$this->init();
 		
-		if($this->piVars['submit']) {
-			$content = $this->checkData();
-		} else {
-			t3lib_div::loadTCA('fe_users');
-
-			$this->lang = t3lib_div::makeInstance('language');
-			$this->lang->init($this->language);	
-			
-			$subpartArray['###FIELDS###'] = $this->cObj->getSubpart($this->template['total'], '###FIELDS###');
-			foreach(t3lib_div::trimExplode(',', $this->tempFields) as $value) {
-				$markerArray['###FIELDNAME_' . strtoupper($value) . '###'] = $this->prefixId . '[' . $value . ']';
-				$markerArray['###LABEL_' . strtoupper($value) . '###'] = $this->lang->sL($GLOBALS['TCA']['fe_users']['columns'][$value]['label']);;
+		$content = $this->generateFields();
+		if(!$this->error) {
+			if($this->piVars['action'] == 'create') {
+				$status = $this->createUser();
+				if($status === true) {
+					$content = 'Benutzer wurde angelegt';
+				} else {
+					$content = $status;
+				}
 			}
-			$markerArray['###ACTION###'] = $this->pi_getPageLink($GLOBALS['TSFE']->id, '_TOP', array('no_cache' => 1));
-			$markerArray['###FIELDNAME_SUBMIT###'] = $this->prefixId . '[submit]';
-			$markerArray['###LABEL_SUBMIT###'] = $this->pi_getLL('label_submit');
-
-			$content = $this->cObj->substituteMarkerArray($subpartArray['###FIELDS###'], $markerArray);			
+			if($this->piVars['action'] == 'update') {
+				$this->updateUser();
+			}
 		}
 	
 		return $this->pi_wrapInBaseClass($content);
@@ -105,7 +105,14 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 	 * initializes the plugin
 	 */
 	protected function init() {
+		//Initialize Flexform
+		$this->pi_initPIflexForm();
+
 		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
+
+		// get language object to translate field labels
+		$this->lang = t3lib_div::makeInstance('language');
+		$this->lang->init($this->language);
 
 		// set Swiftmail
 		$this->mailer = t3lib_div::makeInstance('t3lib_mail_message');
@@ -116,6 +123,13 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 			$this->language = $GLOBALS['TSFE']->tmpl->setup['config.']['language'];
 		}
 		
+		// Get Flexformvalues
+		$this->conf['pid'] = $this->fetchConfigurationValue('pid');
+		$this->conf['table'] = $this->fetchConfigurationValue('table');
+		$this->conf['userGroup'] = $this->fetchConfigurationValue('userGroup');
+		$this->conf['fieldList'] = $this->fetchConfigurationValue('fieldList');
+		$this->conf['fieldListRequired'] = $this->fetchConfigurationValue('fieldListRequired');
+
 		$this->template['total'] = $this->cObj->fileResource(
 			'EXT:'.$this->extKey.$this->templateFile
 		);
@@ -139,20 +153,102 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 	}
 	
 	/**
-	 * Enter description here ...
+	 * Generate Fields
 	 */
-	protected function checkData() {
-		$this->mailer->setTo(array($this->piVars['email'] => ''));
-		$this->mailer->setSubject('Bestätigungsmail'); 
-		$this->mailer->setBody('<html><head><title>Titel</title></head><body><p>Ich bin HTML-Text</p></body></html>');
+	protected function generateFields() {
+		t3lib_div::loadTCA($this->conf['table']);
 
-		if($this->mailer->send()) {
-			$content = 'Die E-Mail wurde versandt';
-		} else {
-			$content = 'Fehler beim Versenden der E-Mail';
+		// get subpart of all fields
+		$subpartArray['###FIELDS###'] = $this->cObj->getSubpart($this->template['total'], '###FIELDS###');
+
+		// replace all label and name markers
+		foreach(t3lib_div::trimExplode(',', $this->conf['fieldList']) as $value) {
+			$markerArray['###FIELDNAME_' . strtoupper($value) . '###'] = $this->prefixId . '[' . $value . ']';
+			$markerArray['###LABEL_' . strtoupper($value) . '###'] = $this->lang->sL($GLOBALS['TCA'][$this->conf['table']]['columns'][$value]['label']);;
+			$markerArray['###MANDATORY_' . strtoupper($value) . '###'] = '';
+
+			// show errors only if there is something to create or change
+			if($this->piVars['action'] == 'create' || $this->piVars['action'] == 'update') {
+				$markerArray['###ERROR_' . strtoupper($value) . '###'] = $this->checkField($value, $GLOBALS['TCA'][$this->conf['table']]['columns'][$value]['label']);
+			} else {
+				$markerArray['###ERROR_' . strtoupper($value) . '###'] = '';
+			}
 		}
-		
-		return $content;
+
+		// overwrite empty mandatory marker with mandatory star
+		foreach(t3lib_div::trimExplode(',', $this->conf['fieldListRequired']) as $value) {
+			$markerArray['###MANDATORY_' . strtoupper($value) . '###'] = $this->cObj->wrap('*', $this->conf['wrapMandatory']);
+		}
+
+		// replace plugin markers
+		$markerArray['###ACTION###'] = $this->pi_getPageLink($GLOBALS['TSFE']->id, '_TOP', array('no_cache' => 1));
+		$markerArray['###FIELDNAME_SUBMIT###'] = $this->prefixId . '[submit]';
+		$markerArray['###LABEL_SUBMIT###'] = $this->pi_getLL('label_submit');
+		if(count($this->piVars) == 0) {
+			$markerArray['###HIDDEN_FIELDS###'] = '<input type="hidden" name="' . $this->prefixId . '[action]" value="create" />';
+		} else {
+			$markerArray['###HIDDEN_FIELDS###'] = '';
+		}
+
+		return $this->cObj->substituteMarkerArray($subpartArray['###FIELDS###'], $markerArray);
+	}
+
+	/**
+	 * Check field for validation
+	 */
+	protected function checkField($field, $lang) {
+		// checks if field is required
+		$fieldListArray = t3lib_div::trimExplode(',', $this->conf['fieldListRequired']);
+		foreach($fieldListArray as $value) {
+			// if field was found in required list
+			if($value == $field) {
+				// check if not empty
+				if($this->piVars[$field] != '') {
+					return '';
+				} else {
+					$this->error = true;
+					$fieldLabel = $this->cObj->wrap($this->lang->sL($lang), $this->conf['wrapErrorRequiredField']);
+					$errorRequired = $this->cObj->wrap(
+						sprintf(
+							$this->pi_getLL('error_required'),
+							$fieldLabel
+						),
+						$this->conf['wrapErrorRequired']
+					);
+					return $errorRequired;
+				}
+			}
+		}
+	}
+
+	function createUser() {
+		// set some default if table = fe_users
+		$this->piVars['username'] = $this->piVars['email'];
+		$this->piVars['password'] = substr(md5($this->piVars['email']), 0, 8);
+		$this->piVars['usergroup'] = $this->conf['userGroup'];
+		$this->piVars['module_sys_dmail_newsletter'] = 1;
+		$fieldListForTable = $this->conf['fieldList'] . ',' . $this->requiredFieldsForTable[$this->conf['table']];
+
+		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+			'uid',
+			$this->conf['table'],
+			'email = "' . $this->piVars['email'] . '"' .
+			$this->cObj->enableFields($this->conf['table']),
+			'', '', ''
+		);
+
+		// if record was found decide if an error occours or the record should be updated
+		if($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
+			$user = $GLOBALS['TYPO3_DB']->sql_fetch_row($res);
+			if($this->conf['updateUserIfPossible']) {
+				$this->cObj->DBgetUpdate($this->conf['table'], $user['uid'], $this->piVars, $fieldListForTable, TRUE);
+			} else {
+				return $this->pi_getLL('error_allreadyInDB');
+			}
+		} else {
+			$this->cObj->DBgetInsert($this->conf['table'], $this->conf['pid'], $this->piVars, $fieldListForTable, TRUE);
+		}
+		return true;
 	}
 
 	/**

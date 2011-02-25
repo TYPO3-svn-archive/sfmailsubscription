@@ -6,21 +6,14 @@
 </head>
 
 <body>
-  <!-- ###FIELDS### begin -->
-    <form action="###ACTION###" method="post">
-			<label>###LABEL_EMAIL###</label>
-			<input type="text" name="###FIELDNAME_EMAIL###">
-			<label>###LABEL_FIRST_NAME###</label>
-			<input type="text" name="###FIELDNAME_FIRST_NAME###">
-			<label>###LABEL_TELEPHONE###</label>
-			<input type="text" name="###FIELDNAME_TELEPHONE###">
-			<label>###LABEL_WWW###</label>
-			<input type="text" name="###FIELDNAME_WWW###">
-			<label>###LABEL_ADDRESS###</label>
-			<input type="text" name="###FIELDNAME_ADDRESS###">
+	<!-- ###FIELDS### begin -->
+		<form action="###ACTION###" method="post">
+			###HIDDEN_FIELDS###
+			<label>###LABEL_EMAIL### ###MANDATORY_EMAIL###</label>
+			<input type="text" name="###FIELDNAME_EMAIL###">###ERROR_EMAIL###
 			<br />
 			<input name="###FIELDNAME_SUBMIT###" type="submit" value="###LABEL_SUBMIT###" />
 		</form>
-  <!-- ###FIELDS### end -->
+	<!-- ###FIELDS### end -->
 </body>
 </html>

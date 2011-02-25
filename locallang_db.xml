@@ -7,9 +7,23 @@
 	<data type="array">
 		<languageKey index="default" type="array">
 			<label index="tt_content.list_type_pi1">SF Mailsubscription</label>
+			<label index="flexform.general">General</label>
+			<label index="flexform.general.pid">Choose PID where to store the Users</label>
+			<label index="flexform.general.table">In which table do you want to save the newsletterrecords? (fe_users, tt_address, ...)?</label>
+			<label index="flexform.general.userGroup">In case of fe_users you have to fill this field with the default userGroup-UID for all new newsletter subscriptions.</label>
+			<label index="flexform.general.fieldList">Which fields of the given table the user should see?</label>
+			<label index="flexform.general.fieldListRequired">Which fields of the given table the user have to fill (required)?</label>
+			<label index="flexform.general.updateUserIfPossible">Checked = Try to update an existing user. Unchecked = if record allready in database then a errormessage will be displayed.</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="tt_content.list_type_pi1">SF Mailsubscription</label>
+			<label index="flexform.general">Allgemein</label>
+			<label index="flexform.general.pid">Wähle die PID, wo die Benutzer hinterlegt werden sollen.</label>
+			<label index="flexform.general.table">In welcher Tabelle werden die neuen Newsletterdatensätze gespeichert? (fe_users, tt_address, ...)?</label>
+			<label index="flexform.general.userGroup">Bei Auswahl von fe_users muss dieses Feld hier mit der Benutzergruppen-ID gefüllt werden, die allen neuen Newsletterbeziehern zugewiesen wird.</label>
+			<label index="flexform.general.fieldList">Welche Felder der angegebenen Tabelle sollen dem Benutzer zur Verfügung stehen?</label>
+			<label index="flexform.general.fieldListRequired">Welche Felder der angegebenen Tabelle muss der User ausfüllen bzw. werden benötigt?</label>
+			<label index="flexform.general.updateUserIfPossible">Aktiv = Versuche einen bereits bestehenden Benutzer zu aktualisieren. Deaktiviert = Wenn Benutzer bereits vorhanden, dann wird eine Fehlermeldung ausgegeben.</label>
 		</languageKey>
 	</data>
 </T3locallang>

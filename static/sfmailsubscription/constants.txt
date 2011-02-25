@@ -1,0 +1,10 @@
+plugin.tx_sfmailsubscription_pi1 {
+	 # cat=mailsubscription; type=wrap; label=Wrap mandatory: How to wrap the little mandatory star
+	wrapMandatory = <span style="color: red;">|</span>
+
+	 # cat=mailsubscription; type=wrap; label=Wrap error (required):Wrap whole error string for required fields
+	wrapErrorRequired = <em>|</em>
+
+	 # cat=mailsubscription; type=wrap; label=Wrap error field: Wrap only the fieldname itself within the error string for required fields
+	wrapErrorRequiredField = <strong>|</strong>
+}

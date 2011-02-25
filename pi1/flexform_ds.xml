@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<T3DataStructure>
+	<meta>
+		<langDisable>1</langDisable>
+		<langChildren>0</langChildren>
+	</meta>
+	<sheets>
+		<sDEF>
+			<ROOT>
+				<TCEforms>
+					<sheetTitle>LLL:EXT:sfmailsubscription/locallang_db.xml:flexform.general</sheetTitle>
+				</TCEforms>
+				<type>array</type>
+				<el>
+					<pid>
+						<TCEforms>
+							<label>LLL:EXT:sfmailsubscription/locallang_db.xml:flexform.general.pid</label>
+							<config>
+								<type>group</type>
+								<internal_type>db</internal_type>
+								<allowed>pages</allowed>
+								<prepend_tname>0</prepend_tname>
+								<multiple>0</multiple>
+								<minitems>1</minitems>
+								<maxitems>1</maxitems>
+							</config>
+						</TCEforms>
+					</pid>
+					<table>
+						<TCEforms>
+							<label>LLL:EXT:sfmailsubscription/locallang_db.xml:flexform.general.table</label>
+							<onChange>reload</onChange>
+							<config>
+								<type>select</type>
+								<items>
+									<numIndex index="0" type="array">
+										<numIndex index="0">fe_users</numIndex>
+										<numIndex index="1">fe_users</numIndex>
+									</numIndex>
+									<numIndex index="1" type="array">
+										<numIndex index="0">tt_address</numIndex>
+										<numIndex index="1">tt_address</numIndex>
+									</numIndex>
+								</items>
+								<size>1</size>
+								<minitems>0</minitems>
+								<maxitems>1</maxitems>
+							</config>
+						</TCEforms>
+					</table>
+					<userGroup>
+						<TCEforms>
+							<label>LLL:EXT:sfmailsubscription/locallang_db.xml:flexform.general.userGroup</label>
+							<displayCond>FIELD:table:=:fe_users</displayCond>
+							<config>
+								<type>group</type>
+								<internal_type>db</internal_type>
+								<allowed>fe_groups</allowed>
+								<prepend_tname>0</prepend_tname>
+								<multiple>0</multiple>
+								<minitems>1</minitems>
+								<maxitems>1</maxitems>
+							</config>
+						</TCEforms>
+					</userGroup>
+					<fieldList>
+						<TCEforms>
+							<label>LLL:EXT:sfmailsubscription/locallang_db.xml:flexform.general.fieldList</label>
+							<config>
+								<type>input</type>
+								<eval>trim</eval>
+							</config>
+						</TCEforms>
+					</fieldList>
+					<fieldListRequired>
+						<TCEforms>
+							<label>LLL:EXT:sfmailsubscription/locallang_db.xml:flexform.general.fieldListRequired</label>
+							<config>
+								<type>input</type>
+								<eval>trim</eval>
+							</config>
+						</TCEforms>
+					</fieldListRequired>
+					<updateUserIfPossible>
+						<TCEforms>
+							<label>LLL:EXT:sfmailsubscription/locallang_db.xml:flexform.general.updateUserIfPossible</label>
+							<config>
+								<type>check</type>
+							</config>
+						</TCEforms>
+					</updateUserIfPossible>
+				</el>
+		  </ROOT>
+		</sDEF>
+	</sheets>
+</T3DataStructure>

@@ -1,0 +1,6 @@
+plugin.tx_sfmailsubscription_pi1 = USER
+plugin.tx_sfmailsubscription_pi1 {
+	wrapMandatory = {$plugin.tx_sfmailsubscription_pi1.wrapMandatory}
+	wrapErrorRequired = {$plugin.tx_sfmailsubscription_pi1.wrapErrorRequired}
+	wrapErrorRequiredField = {$plugin.tx_sfmailsubscription_pi1.wrapErrorRequiredField}
+}
