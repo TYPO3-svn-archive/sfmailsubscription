@@ -1,0 +1,5 @@
+ # cat=basic; type=string; label=From email: E-Mail address of the sender (FROM:)
+from_email = webmaster@localhost
+
+# cat=basic; type=string; label=From name: The name of the senders email address
+from_name = Webmaster
