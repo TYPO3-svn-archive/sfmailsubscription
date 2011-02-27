@@ -3,4 +3,17 @@ plugin.tx_sfmailsubscription_pi1 {
 	wrapMandatory = {$plugin.tx_sfmailsubscription_pi1.wrapMandatory}
 	wrapErrorRequired = {$plugin.tx_sfmailsubscription_pi1.wrapErrorRequired}
 	wrapErrorRequiredField = {$plugin.tx_sfmailsubscription_pi1.wrapErrorRequiredField}
+	
+	categories {
+		10 = TEXT
+		10 {
+			field = uid
+			wrap = <div><input type="checkbox" name="tx_sfmailsubscription_pi1[categories][|]" />&nbsp;
+		}
+		20 = TEXT
+		20 {
+			field = category
+			wrap = |</div>	
+		}
+	}
 }

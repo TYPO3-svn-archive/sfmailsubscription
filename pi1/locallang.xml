@@ -7,11 +7,14 @@
 	<data type="array">
 		<languageKey index="default" type="array">
 			<label index="label_submit">Send</label>
+			<label index="info_sendConfirmationMail">We have send you an email. Please click on the link in the email to confirm your registration.</label>
+			<label index="info_sendConfirmationMail">We have send you an email. Please click on the link in the email to confirm your registration.</label>
 			<label index="error_required">The field: %1$s is required.</label>
 			<label index="error_allreadyInDB">Sorry. The given email address was allready registered in our database.</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="label_submit">Absenden</label>
+			<label index="info_sendConfirmationMail">Wir haben Ihnen soeben eine E-Mail gesendet. Bitte klicken Sie auf den Link in der E-Mail um Ihre Registrierung für den Newsletter zu bestätigen.</label>
 			<label index="error_required">Das Feld: %1$s muss ausgefüllt werden.</label>
 			<label index="error_allreadyInDB">Sorry, aber die eingetragene E-Mail-Adresse wurde in unserem System bereits hinterlegt.</label>
 		</languageKey>

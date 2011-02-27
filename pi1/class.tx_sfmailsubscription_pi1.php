@@ -28,7 +28,7 @@
  */
 
 require_once(PATH_tslib.'class.tslib_pibase.php');
-
+//require_once(t3lib_extMgm::siteRelPath($this->extKey).'pi1/tx_sfmailsubscription_mail.php');
 
 /**
  * Plugin 'SF Mailsubscription' for the 'sfmailsubscription' extension.
@@ -48,6 +48,7 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 	var $templateFile = '/res/pi1_template.html';
 	var $template = array();
 	var $error = false;
+	var $userArray = array(); // Array with all userdata
 
 	var $requiredFieldsForTable = array(
 		'fe_users' => 'username,password,usergroup',
@@ -63,11 +64,18 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 	var $lang;
 	
 	/**
-	 * Swiftmail-Object
-	 * 
-	 * @var t3lib_mail_message
+	 * Mail-Object
+	 *
+	 * @var tx_sfmailsubscription_mail
 	 */
-	var $mailer;
+	var $mail;
+	
+	/**
+	 * User-Object
+	 *
+	 * @var tx_sfmailsubscription_user
+	 */
+	var $user;
 	
 	/**
 	 * The main method of the PlugIn
@@ -86,15 +94,21 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		$content = $this->generateFields();
 		if(!$this->error) {
 			if($this->piVars['action'] == 'create') {
-				$status = $this->createUser();
+				$status = $this->user->createUser();
 				if($status === true) {
-					$content = 'Benutzer wurde angelegt';
+					$content = $this->pi_getLL('info_sendConfirmationMail');
+					$this->mail->sendMail();
 				} else {
 					$content = $status;
 				}
 			}
 			if($this->piVars['action'] == 'update') {
 				$this->updateUser();
+			}
+			if(t3lib_div::_GET('authCode') != '' && t3lib_div::_GET('authCode') == $this->mail->getAuthCode()) {
+				if($this->user->activateUser()) {
+					$this->mail->sendMail('confirmed');
+				}
 			}
 		}
 	
@@ -110,31 +124,35 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 
 		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
 
-		// get language object to translate field labels
-		$this->lang = t3lib_div::makeInstance('language');
-		$this->lang->init($this->language);
-
-		// set Swiftmail
-		$this->mailer = t3lib_div::makeInstance('t3lib_mail_message');
-		$this->mailer->setFrom(array($this->extConf['from_email'] => $this->extConf['from_name']));
-		
-		// Set language
-		if($GLOBALS['TSFE']->tmpl->setup['config.']['language']) {
-			$this->language = $GLOBALS['TSFE']->tmpl->setup['config.']['language'];
-		}
-		
 		// Get Flexformvalues
 		$this->conf['pid'] = $this->fetchConfigurationValue('pid');
 		$this->conf['table'] = $this->fetchConfigurationValue('table');
 		$this->conf['userGroup'] = $this->fetchConfigurationValue('userGroup');
 		$this->conf['fieldList'] = $this->fetchConfigurationValue('fieldList');
 		$this->conf['fieldListRequired'] = $this->fetchConfigurationValue('fieldListRequired');
-
+		$this->conf['subject'] = $this->fetchConfigurationValue('subject');
+		
 		$this->template['total'] = $this->cObj->fileResource(
 			'EXT:'.$this->extKey.$this->templateFile
 		);
 
 		$this->addHeaderPart();
+
+			// get language object to translate field labels
+		$this->lang = t3lib_div::makeInstance('language');
+		$this->lang->init($this->language);
+
+		// Set language
+		if($GLOBALS['TSFE']->tmpl->setup['config.']['language']) {
+			$this->language = $GLOBALS['TSFE']->tmpl->setup['config.']['language'];
+		}
+		
+		// get mail object for sending confirmation messages
+		$this->mail = t3lib_div::makeInstance('tx_sfmailsubscription_mail', $this);
+		
+		// get user object
+		$this->user = t3lib_div::makeInstance('tx_sfmailsubscription_user', $this);
+		$this->userArray = $this->user->getUserRecord();
 	}
 
 	/**
@@ -184,6 +202,7 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		$markerArray['###ACTION###'] = $this->pi_getPageLink($GLOBALS['TSFE']->id, '_TOP', array('no_cache' => 1));
 		$markerArray['###FIELDNAME_SUBMIT###'] = $this->prefixId . '[submit]';
 		$markerArray['###LABEL_SUBMIT###'] = $this->pi_getLL('label_submit');
+		$markerArray['###CATEGORIES###'] = $this->generateCategories();
 		if(count($this->piVars) == 0) {
 			$markerArray['###HIDDEN_FIELDS###'] = '<input type="hidden" name="' . $this->prefixId . '[action]" value="create" />';
 		} else {
@@ -220,35 +239,22 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 			}
 		}
 	}
-
-	function createUser() {
-		// set some default if table = fe_users
-		$this->piVars['username'] = $this->piVars['email'];
-		$this->piVars['password'] = substr(md5($this->piVars['email']), 0, 8);
-		$this->piVars['usergroup'] = $this->conf['userGroup'];
-		$this->piVars['module_sys_dmail_newsletter'] = 1;
-		$fieldListForTable = $this->conf['fieldList'] . ',' . $this->requiredFieldsForTable[$this->conf['table']];
-
+	
+	function generateCategories() {
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-			'uid',
-			$this->conf['table'],
-			'email = "' . $this->piVars['email'] . '"' .
-			$this->cObj->enableFields($this->conf['table']),
-			'', '', ''
+			'*',
+			'sys_dmail_category',
+			'pid = ' . $this->conf['pid'] . $this->cObj->enableFields('sys_dmail_category'),
+			'sorting', '', ''
 		);
-
-		// if record was found decide if an error occours or the record should be updated
+		
 		if($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
-			$user = $GLOBALS['TYPO3_DB']->sql_fetch_row($res);
-			if($this->conf['updateUserIfPossible']) {
-				$this->cObj->DBgetUpdate($this->conf['table'], $user['uid'], $this->piVars, $fieldListForTable, TRUE);
-			} else {
-				return $this->pi_getLL('error_allreadyInDB');
+			while($category = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
+				$this->cObj->data = $category;
+				$content .= $this->cObj->COBJ_ARRAY($this->conf['categories.']);
 			}
-		} else {
-			$this->cObj->DBgetInsert($this->conf['table'], $this->conf['pid'], $this->piVars, $fieldListForTable, TRUE);
 		}
-		return true;
+		return $content;
 	}
 
 	/**

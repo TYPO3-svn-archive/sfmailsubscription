@@ -1,19 +1,54 @@
-<html>
-<head>
 <!-- ###CSS### begin -->
-	<link href="###PATH###" media="screen" rel="stylesheet" type="text/css" />
+<link href="###PATH###" media="screen" rel="stylesheet" type="text/css" />
 <!-- ###CSS### end -->
-</head>
 
-<body>
-	<!-- ###FIELDS### begin -->
-		<form action="###ACTION###" method="post">
-			###HIDDEN_FIELDS###
-			<label>###LABEL_EMAIL### ###MANDATORY_EMAIL###</label>
-			<input type="text" name="###FIELDNAME_EMAIL###">###ERROR_EMAIL###
-			<br />
-			<input name="###FIELDNAME_SUBMIT###" type="submit" value="###LABEL_SUBMIT###" />
-		</form>
-	<!-- ###FIELDS### end -->
-</body>
-</html>
+<!-- ###FIELDS### begin -->
+	<form action="###ACTION###" method="post">
+		###HIDDEN_FIELDS###
+		<label>###LABEL_EMAIL### ###MANDATORY_EMAIL###</label>
+		<input type="text" name="###FIELDNAME_EMAIL###" />###ERROR_EMAIL###
+		<br />
+		###CATEGORIES###
+		<input name="###FIELDNAME_SUBMIT###" type="submit" value="###LABEL_SUBMIT###" />
+	</form>
+<!-- ###FIELDS### end -->
+
+<!-- ###EMAIL_CREATE_PLAIN### begin -->
+Hallo ###USER_EMAIL_PLAIN###,
+
+Sie haben sich für den Newsletter auf ###SERVER### angemeldet.
+Damit Ihre Registrierung abgeschlossen werden kann klicken Sie bitte auf den folgenden Link:
+###URL###
+
+Mit freundlichen Grüßen
+
+Stefan Frömken
+<!-- ###EMAIL_CREATE_PLAIN### begin -->
+
+<!-- ###EMAIL_CREATE_HTML### begin -->
+<p>Hallo ###USER_EMAIL###,</p>
+<p>Sie haben sich für den Newsletter auf ###SERVER### angemeldet.<br />
+Damit Ihre Registrierung abgeschlossen werden kann klicken Sie bitte auf den folgenden Link:</p>
+<p><a href="###LINK###">Newsletterregistrierung bestätigen</a></p>
+<p>Mit freundlichen Grüßen</p>
+<p>Stefan Frömken</p>
+<!-- ###EMAIL_CREATE_HTML### begin -->
+
+<!-- ###EMAIL_CONFIRMED_PLAIN### begin -->
+Hallo ###USER_EMAIL###,
+
+die Registrierung wurde erfolgreich abgeschlossen.
+Sie sind nun für den Newsletter auf ###SERVER### registriert.
+
+Mit freundlichen Grüßen
+
+Stefan Frömken
+<!-- ###EMAIL_CONFIRMED_PLAIN### begin -->
+
+<!-- ###EMAIL_CONFIRMED_HTML### begin -->
+<p>Hallo ###USER_EMAIL_PLAIN###,</p>
+<p>die Registrierung wurde erfolgreich abgeschlossen.<br />
+Sie sind nun für den Newsletter auf ###SERVER### registriert.</p>
+<p>Mit freundlichen Grüßen</p>
+<p>Stefan Frömken</p>
+<!-- ###EMAIL_CONFIRMED_HTML### begin -->

@@ -89,6 +89,15 @@
 							</config>
 						</TCEforms>
 					</updateUserIfPossible>
+					<subject>
+						<TCEforms>
+							<label>LLL:EXT:sfmailsubscription/locallang_db.xml:flexform.general.subject</label>
+							<config>
+								<type>input</type>
+								<eval>trim</eval>
+							</config>
+						</TCEforms>
+					</subject>
 				</el>
 		  </ROOT>
 		</sDEF>
