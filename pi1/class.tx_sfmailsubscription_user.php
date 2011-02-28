@@ -54,14 +54,14 @@ class tx_sfmailsubscription_user {
 	 * @param int/string $value user's email or uid
 	 * @return array Array with userdata
 	 */
-	function getUserRecord($value = 0) {
+	function getUserRecord($value = 0, $showHidden = 0) {
 		if($value == 0) {
 			// If $value is not set, try to get an userID from GET
 			$uid = intval(t3lib_div::_GET('user'));
 			if(!$uid) {
-				// if we can get an userID, try it with the emailaddress
+				// if we can't' get an userID, try it with the emailaddress
 				$email = htmlspecialchars($this->pObj->piVars['email']);
-				$where = 'email = "' . $email . '"';			
+				$where = 'email = "' . $email . '"';
 			} else {
 				$where = 'uid = ' . $uid;			
 			}
@@ -80,12 +80,9 @@ class tx_sfmailsubscription_user {
 				'*',
 				$this->pObj->conf['table'],
 				$where .
-				$this->pObj->cObj->enableFields($this->pObj->conf['table'], 1),
-				'', '', ''
+				$this->pObj->cObj->enableFields($this->pObj->conf['table'], $showHidden),
+				'tstamp DESC', '', ''
 			);
-			
-			//echo $res . "\n";
-			//print_r($GLOBALS['TYPO3_DB']->sql_fetch_assoc($res));
 			
 			if($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
 				return $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
@@ -98,8 +95,8 @@ class tx_sfmailsubscription_user {
 	}
 	
 	function createUser() {
-		// if record was found decide if an error occours or the record should be updated
 		if($user = $this->getUserRecord($this->pObj->piVars['email'])) {
+			// if a visible record was found decide if an error occours or the record should be updated
 			if($this->pObj->conf['updateUserIfPossible']) {
 				$this->pObj->piVars['module_sys_dmail_newsletter'] = 1;
 				$this->pObj->cObj->DBgetUpdate(
@@ -111,6 +108,9 @@ class tx_sfmailsubscription_user {
 			} else {
 				return $this->pObj->pi_getLL('error_allreadyInDB');
 			}
+		} elseif($user = $this->getUserRecord($this->pObj->piVars['email'], 1)) {
+			// if a hidden record was found, this email address was allready registered, but not activated
+			return $this->pObj->pi_getLL('error_emailNotActivated');			
 		} else {
 			// set some defaults for insertion
 			$this->pObj->piVars['username'] = $this->pObj->piVars['email'];
@@ -121,7 +121,7 @@ class tx_sfmailsubscription_user {
 			$fieldListForTable = $this->disabledField . ',' . $this->pObj->conf['fieldList'] . ',' . $this->pObj->requiredFieldsForTable[$this->pObj->conf['table']];
 
 			$res = $this->pObj->cObj->DBgetInsert($this->pObj->conf['table'], $this->pObj->conf['pid'], $this->pObj->piVars, $fieldListForTable, TRUE);
-			$this->pObj->userArray = $this->getUserRecord($GLOBALS['TYPO3_DB']->sql_insert_id($res));
+			$this->pObj->userArray = $this->getUserRecord($GLOBALS['TYPO3_DB']->sql_insert_id($res), 1);
 		}
 		return true;
 	}	
@@ -132,7 +132,7 @@ class tx_sfmailsubscription_user {
 	 */
 	function activateUser() {
 		// if record was found decide if an error occours or the record should be updated
-		if($user = $this->getUserRecord(intval(t3lib_div::_GET('user')))) {
+		if($user = $this->getUserRecord(intval(t3lib_div::_GET('user')), 1)) {
 			$this->pObj->cObj->DBgetUpdate(
 				$this->pObj->conf['table'],
 				$user['uid'],

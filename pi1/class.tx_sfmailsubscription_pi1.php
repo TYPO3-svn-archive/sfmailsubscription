@@ -92,7 +92,9 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		$this->init();
 		
 		$content = $this->generateFields();
+		
 		if(!$this->error) {
+			// create a new user and send confirmation mail
 			if($this->piVars['action'] == 'create') {
 				$status = $this->user->createUser();
 				if($status === true) {
@@ -102,12 +104,48 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 					$content = $status;
 				}
 			}
+			
+			// edit an existing user
 			if($this->piVars['action'] == 'update') {
 				$this->updateUser();
 			}
-			if(t3lib_div::_GET('authCode') != '' && t3lib_div::_GET('authCode') == $this->mail->getAuthCode()) {
-				if($this->user->activateUser()) {
-					$this->mail->sendMail('confirmed');
+			
+			// If a link in a mail was clicked...
+			if(t3lib_div::_GET('authCode') != '') {
+				switch(t3lib_div::_GET('action')) {
+					case 'create':
+						// search in the hidden records
+						$this->userArray = $this->user->getUserRecord(intval(t3lib_div::_GET('user')), 1);
+						if(t3lib_div::_GET('authCode') == $this->mail->getAuthCode()) {
+							if($this->user->activateUser()) {
+								$this->mail->sendMail('confirmed');
+								$content = $this->pi_getLL('info_emailOK');
+							}
+						}
+						break;
+					case 'update':
+						// search in the hidden records
+						$this->userArray = $this->user->getUserRecord(intval(t3lib_div::_GET('user')));
+						if(t3lib_div::_GET('authCode') == $this->mail->getAuthCode()) {
+							if($this->user->updateUser()) {
+								$this->mail->sendMail('updated');
+								$content = $this->pi_getLL('info_updateOK');
+							}
+						}
+						break;
+					case 'delete':
+						// search in the hidden records
+						$this->userArray = $this->user->getUserRecord(intval(t3lib_div::_GET('user')));
+						if(t3lib_div::_GET('authCode') == $this->mail->getAuthCode()) {
+							if($this->user->deleteUser()) {
+								$this->mail->sendMail('deleted');
+								$content = $this->pi_getLL('info_deleteOK');
+							}
+						}
+						break;
+					default:
+						$content = 'no action was given.';
+						break;
 				}
 			}
 		}
@@ -126,7 +164,9 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 
 		// Get Flexformvalues
 		$this->conf['pid'] = $this->fetchConfigurationValue('pid');
+		$this->conf['pid'] = ($this->conf['pid']) ? $this->conf['pid'] : 0;
 		$this->conf['table'] = $this->fetchConfigurationValue('table');
+		$this->conf['table'] = ($this->conf['table']) ? $this->conf['table'] : 'fe_users';
 		$this->conf['userGroup'] = $this->fetchConfigurationValue('userGroup');
 		$this->conf['fieldList'] = $this->fetchConfigurationValue('fieldList');
 		$this->conf['fieldListRequired'] = $this->fetchConfigurationValue('fieldListRequired');
@@ -138,7 +178,7 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 
 		$this->addHeaderPart();
 
-			// get language object to translate field labels
+		// get language object to translate field labels
 		$this->lang = t3lib_div::makeInstance('language');
 		$this->lang->init($this->language);
 
@@ -152,7 +192,6 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		
 		// get user object
 		$this->user = t3lib_div::makeInstance('tx_sfmailsubscription_user', $this);
-		$this->userArray = $this->user->getUserRecord();
 	}
 
 	/**

@@ -8,15 +8,18 @@
 		<languageKey index="default" type="array">
 			<label index="label_submit">Send</label>
 			<label index="info_sendConfirmationMail">We have send you an email. Please click on the link in the email to confirm your registration.</label>
-			<label index="info_sendConfirmationMail">We have send you an email. Please click on the link in the email to confirm your registration.</label>
+			<label index="info_emailOK">Thank you for your registration. Your email was accepted and you're now in the list of newsletter subscribers.</label>
 			<label index="error_required">The field: %1$s is required.</label>
 			<label index="error_allreadyInDB">Sorry. The given email address was allready registered in our database.</label>
+			<label index="error_emailNotActivated">Sorry. This email is allready registered but was not activated till now.</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="label_submit">Absenden</label>
 			<label index="info_sendConfirmationMail">Wir haben Ihnen soeben eine E-Mail gesendet. Bitte klicken Sie auf den Link in der E-Mail um Ihre Registrierung für den Newsletter zu bestätigen.</label>
+			<label index="info_emailOK">Vielen Dank für Ihre Registrierung. Ihre E-Mail wurde als gültig bestätigt und Sie wurden erfolgreich in die Liste des Newsletters eingetragen.</label>
 			<label index="error_required">Das Feld: %1$s muss ausgefüllt werden.</label>
 			<label index="error_allreadyInDB">Sorry, aber die eingetragene E-Mail-Adresse wurde in unserem System bereits hinterlegt.</label>
+			<label index="error_emailNotActivated">Sorry. Diese E-Mail-Adresse wurde bereits registriert, aber noch nicht freigeschaltet.</label>
 		</languageKey>
 	</data>
 </T3locallang>

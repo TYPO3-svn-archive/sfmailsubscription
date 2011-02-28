@@ -14,6 +14,7 @@
 			<label index="flexform.general.fieldList">Which fields of the given table the user should see?</label>
 			<label index="flexform.general.fieldListRequired">Which fields of the given table the user have to fill (required)?</label>
 			<label index="flexform.general.updateUserIfPossible">Checked = Try to update an existing user. Unchecked = if record allready in database then a errormessage will be displayed.</label>
+			<label index="flexform.general.subject">Subject for email</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="tt_content.list_type_pi1">SF Mailsubscription</label>
@@ -24,6 +25,7 @@
 			<label index="flexform.general.fieldList">Welche Felder der angegebenen Tabelle sollen dem Benutzer zur Verfügung stehen?</label>
 			<label index="flexform.general.fieldListRequired">Welche Felder der angegebenen Tabelle muss der User ausfüllen bzw. werden benötigt?</label>
 			<label index="flexform.general.updateUserIfPossible">Aktiv = Versuche einen bereits bestehenden Benutzer zu aktualisieren. Deaktiviert = Wenn Benutzer bereits vorhanden, dann wird eine Fehlermeldung ausgegeben.</label>
+			<label index="flexform.general.subject">Betreff für die zu versendenden E-Mails</label>
 		</languageKey>
 	</data>
 </T3locallang>
