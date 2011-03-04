@@ -2,7 +2,19 @@
 <link href="###PATH###" media="screen" rel="stylesheet" type="text/css" />
 <!-- ###CSS### end -->
 
-<!-- ###FIELDS### begin -->
+<!-- ###FIELDS_CREATE### begin -->
+	<form action="###ACTION###" method="post">
+		###HIDDEN_FIELDS###
+		<label>###LABEL_EMAIL### ###MANDATORY_EMAIL###</label>
+		<input type="text" name="###FIELDNAME_EMAIL###" />###ERROR_EMAIL###
+		<br />
+		###CATEGORIES###
+		<input name="###FIELDNAME_SUBMIT###" type="submit" value="###LABEL_SUBMIT###" />
+		###EDIT_LINK###
+	</form>
+<!-- ###FIELDS_CREATE### end -->
+
+<!-- ###FIELDS_UPDATE### begin -->
 	<form action="###ACTION###" method="post">
 		###HIDDEN_FIELDS###
 		<label>###LABEL_EMAIL### ###MANDATORY_EMAIL###</label>
@@ -11,7 +23,17 @@
 		###CATEGORIES###
 		<input name="###FIELDNAME_SUBMIT###" type="submit" value="###LABEL_SUBMIT###" />
 	</form>
-<!-- ###FIELDS### end -->
+<!-- ###FIELDS_UPDATE### end -->
+
+<!-- ###FIELDS_EDIT### begin -->
+	<form action="###ACTION###" method="post">
+		###HIDDEN_FIELDS###
+		<label>###LABEL_EMAIL### ###MANDATORY_EMAIL###</label>
+		<input type="text" name="###FIELDNAME_EMAIL###" />###ERROR_EMAIL###
+		<br />
+		<input name="###FIELDNAME_SUBMIT###" type="submit" value="###LABEL_SUBMIT###" />
+	</form>
+<!-- ###FIELDS_EDIT### end -->
 
 <!-- ###EMAIL_CREATE_PLAIN### begin -->
 Hallo ###USER_EMAIL_PLAIN###,
@@ -52,3 +74,27 @@ Sie sind nun für den Newsletter auf ###SERVER### registriert.</p>
 <p>Mit freundlichen Grüßen</p>
 <p>Stefan Frömken</p>
 <!-- ###EMAIL_CONFIRMED_HTML### begin -->
+
+<!-- ###EMAIL_SENDEDITLINKS### begin -->
+Hallo ###USER_EMAIL###,
+
+bitte klicken Sie auf folgenden Link, um Ihre Newslettereinstellungen zu bearbeiten:
+###UPDATE_URL###
+
+bitte klicken Sie auf folgenden Link, um sich vom Newsletter komplett abzumelden:
+###DELETE_URL###
+
+Mit freundlichen Grüßen
+
+Stefan Frömken
+<!-- ###EMAIL_SENDEDITLINKS### end -->
+
+<!-- ###EMAIL_SENDEDITLINKS_HTML### begin -->
+<p>Hallo ###USER_EMAIL###,</p>
+<p>bitte klicken Sie auf folgenden Link, um Ihre Newslettereinstellungen zu bearbeiten:<br />
+<a href="###UPDATE_URL###">###UPDATE_URL###</a></p>
+<p>bitte klicken Sie auf folgenden Link, um sich vom Newsletter komplett abzumelden:<br />
+<a href="###DELETE_URL###">###DELETE_URL###</a></p>
+<p>Mit freundlichen Grüßen</p>
+<p>Stefan Frömken</p>
+<!-- ###EMAIL_SENDEDITLINKS_HTML### end -->

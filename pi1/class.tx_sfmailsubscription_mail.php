@@ -78,7 +78,41 @@ class tx_sfmailsubscription_mail {
 			$GLOBALS['TSFE']->id,
 			'',
 			array(
-				'no_cache' => 1,
+				'action' => $this->pObj->piVars['action'],
+				'user' => $this->pObj->userArray['uid'],
+				'authCode' => $this->getAuthCode()
+			)
+		);
+		return t3lib_div::locationHeaderUrl($link);
+	}
+
+	/**
+	 * Enter description here ...
+	 * @return string
+	 */
+	protected function updateLink() {
+		$link = $this->pObj->pi_getPageLink(
+			$GLOBALS['TSFE']->id,
+			'',
+			array(
+				'action' => 'update',
+				'user' => $this->pObj->userArray['uid'],
+				'authCode' => $this->getAuthCode()
+			)
+		);
+		return t3lib_div::locationHeaderUrl($link);
+	}
+
+	/**
+	 * Enter description here ...
+	 * @return string
+	 */
+	protected function deleteLink() {
+		$link = $this->pObj->pi_getPageLink(
+			$GLOBALS['TSFE']->id,
+			'',
+			array(
+				'action' => 'delete',
 				'user' => $this->pObj->userArray['uid'],
 				'authCode' => $this->getAuthCode()
 			)
@@ -101,6 +135,8 @@ class tx_sfmailsubscription_mail {
 	public function setMailText($marker, $type = 'both') {
 		// define additional Markers
 		$markerArray['###URL###'] = $this->createLink();
+		$markerArray['###UPDATE_URL###'] = $this->updateLink();
+		$markerArray['###DELETE_URL###'] = $this->deleteLink();
 		$markerArray['###SERVER###'] = t3lib_div::getIndpEnv('HTTP_HOST');
 		foreach($this->pObj->userArray as $key => $value) {
 			$markerArray['###USER_' . strtoupper($key) . '###'] = $this->pObj->cObj->stdWrap($value, $this->pObj->conf['userFields.'][$key . '.']);

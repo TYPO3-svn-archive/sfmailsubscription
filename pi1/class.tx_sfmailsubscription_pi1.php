@@ -89,11 +89,23 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		$this->pi_setPiVarDefaults();
 		$this->pi_loadLL();
 		
+		// some initializings
 		$this->init();
 		
-		$content = $this->generateFields();
+		// create Template for fields like email, username, ...
+		if(t3lib_div::_GET('showEdit')) {
+			$content = $this->generateFields('edit');
+		} elseif(t3lib_div::_GET('action') == 'update') {
+			$content = $this->generateFields('update');
+		} else {
+			$content = $this->generateFields('create');
+		}
+
 		
+		// if some required fields are not filled, we can get an error
 		if(!$this->error) {
+			t3lib_div::devLog('Action', $this->extKey, 0, array($this->piVars['action']));
+
 			// create a new user and send confirmation mail
 			if($this->piVars['action'] == 'create') {
 				$status = $this->user->createUser();
@@ -105,11 +117,25 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 				}
 			}
 			
-			// edit an existing user
+			// update an existing user
 			if($this->piVars['action'] == 'update') {
-				$this->updateUser();
+				if(($user = $this->user->getUserRecord($this->piVars['uid']))) {
+					t3lib_div::devLog('user', $this->extKey, 0, $user);
+					$this->userArray = $user;
+					$this->user->updateUser($this->userArray['uid']);
+				}
 			}
-			
+
+			// send edit links
+			if($this->piVars['action'] == 'edit') {
+				if(($user = $this->user->getUserRecord($this->piVars['email']))) {
+					$this->userArray = $user;
+					$this->mail->sendMail('sendEditLinks');
+				} else {
+					$content = 'Ihre E-Mail-Adresse ist mei uns nicht registriert.';
+				}
+			}
+
 			// If a link in a mail was clicked...
 			if(t3lib_div::_GET('authCode') != '') {
 				switch(t3lib_div::_GET('action')) {
@@ -124,20 +150,21 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 						}
 						break;
 					case 'update':
+						/*
 						// search in the hidden records
 						$this->userArray = $this->user->getUserRecord(intval(t3lib_div::_GET('user')));
 						if(t3lib_div::_GET('authCode') == $this->mail->getAuthCode()) {
-							if($this->user->updateUser()) {
+							if($this->user->updateUser($this->userArray['uid'])) {
 								$this->mail->sendMail('updated');
 								$content = $this->pi_getLL('info_updateOK');
 							}
-						}
+						}*/
 						break;
 					case 'delete':
 						// search in the hidden records
 						$this->userArray = $this->user->getUserRecord(intval(t3lib_div::_GET('user')));
 						if(t3lib_div::_GET('authCode') == $this->mail->getAuthCode()) {
-							if($this->user->deleteUser()) {
+							if($this->user->deleteUser($this->userArray['uid'])) {
 								$this->mail->sendMail('deleted');
 								$content = $this->pi_getLL('info_deleteOK');
 							}
@@ -212,11 +239,11 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 	/**
 	 * Generate Fields
 	 */
-	protected function generateFields() {
+	protected function generateFields($type = 'create') {
 		t3lib_div::loadTCA($this->conf['table']);
 
 		// get subpart of all fields
-		$subpartArray['###FIELDS###'] = $this->cObj->getSubpart($this->template['total'], '###FIELDS###');
+		$subpartArray['###FIELDS_'.strtoupper($type).'###'] = $this->cObj->getSubpart($this->template['total'], '###FIELDS_'.strtoupper($type).'###');
 
 		// replace all label and name markers
 		foreach(t3lib_div::trimExplode(',', $this->conf['fieldList']) as $value) {
@@ -238,17 +265,20 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		}
 
 		// replace plugin markers
-		$markerArray['###ACTION###'] = $this->pi_getPageLink($GLOBALS['TSFE']->id, '_TOP', array('no_cache' => 1));
+		$markerArray['###ACTION###'] = $this->pi_getPageLink($GLOBALS['TSFE']->id);
 		$markerArray['###FIELDNAME_SUBMIT###'] = $this->prefixId . '[submit]';
 		$markerArray['###LABEL_SUBMIT###'] = $this->pi_getLL('label_submit');
 		$markerArray['###CATEGORIES###'] = $this->generateCategories();
-		if(count($this->piVars) == 0) {
-			$markerArray['###HIDDEN_FIELDS###'] = '<input type="hidden" name="' . $this->prefixId . '[action]" value="create" />';
-		} else {
-			$markerArray['###HIDDEN_FIELDS###'] = '';
-		}
-
-		return $this->cObj->substituteMarkerArray($subpartArray['###FIELDS###'], $markerArray);
+		$markerArray['###EDIT_LINK###'] = $this->cObj->typoLink('edit', array(
+			'parameter' => $GLOBALS['TSFE']->id,
+			'additionalParams' => '&showEdit=1'
+		));
+		$markerArray['###HIDDEN_FIELDS###'] = '
+			<input type="hidden" name="' . $this->prefixId . '[action]" value="'.$type.'" />
+			<input type="hidden" name="' . $this->prefixId . '[uid]" value="'.intval(t3lib_div::_GET('user')).'" />
+		';
+		
+		return $this->cObj->substituteMarkerArray($subpartArray['###FIELDS_'.strtoupper($type).'###'], $markerArray);
 	}
 
 	/**
