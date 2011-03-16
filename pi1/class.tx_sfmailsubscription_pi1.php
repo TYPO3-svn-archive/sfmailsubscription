@@ -96,7 +96,12 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		if(t3lib_div::_GET('showEdit')) {
 			$content = $this->generateFields('edit');
 		} elseif(t3lib_div::_GET('action') == 'update') {
-			$content = $this->generateFields('update');
+			// if the link in the edit mail was clicked
+			// check if authCode is OK, because userdata will be displayed
+			$this->userArray = $this->user->getUserRecord(intval(t3lib_div::_GET('user')));
+			if(t3lib_div::_GET('authCode') == $this->mail->getAuthCode()) {
+				$content = $this->generateFields('update');
+			}
 		} else {
 			$content = $this->generateFields('create');
 		}
@@ -104,8 +109,6 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		
 		// if some required fields are not filled, we can get an error
 		if(!$this->error) {
-			t3lib_div::devLog('Action', $this->extKey, 0, array($this->piVars['action']));
-
 			// create a new user and send confirmation mail
 			if($this->piVars['action'] == 'create') {
 				$status = $this->user->createUser();
@@ -120,7 +123,6 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 			// update an existing user
 			if($this->piVars['action'] == 'update') {
 				if(($user = $this->user->getUserRecord($this->piVars['uid']))) {
-					t3lib_div::devLog('user', $this->extKey, 0, $user);
 					$this->userArray = $user;
 					$this->user->updateUser($this->userArray['uid']);
 				}
@@ -150,15 +152,6 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 						}
 						break;
 					case 'update':
-						/*
-						// search in the hidden records
-						$this->userArray = $this->user->getUserRecord(intval(t3lib_div::_GET('user')));
-						if(t3lib_div::_GET('authCode') == $this->mail->getAuthCode()) {
-							if($this->user->updateUser($this->userArray['uid'])) {
-								$this->mail->sendMail('updated');
-								$content = $this->pi_getLL('info_updateOK');
-							}
-						}*/
 						break;
 					case 'delete':
 						// search in the hidden records
@@ -248,6 +241,7 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		// replace all label and name markers
 		foreach(t3lib_div::trimExplode(',', $this->conf['fieldList']) as $value) {
 			$markerArray['###FIELDNAME_' . strtoupper($value) . '###'] = $this->prefixId . '[' . $value . ']';
+			$markerArray['###FIELDVALUE_' . strtoupper($value) . '###'] = t3lib_div::removeXSS($this->userArray[$value]);
 			$markerArray['###LABEL_' . strtoupper($value) . '###'] = $this->lang->sL($GLOBALS['TCA'][$this->conf['table']]['columns'][$value]['label']);;
 			$markerArray['###MANDATORY_' . strtoupper($value) . '###'] = '';
 
@@ -310,6 +304,7 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 	}
 	
 	function generateCategories() {
+		// get all categories
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'*',
 			'sys_dmail_category',
@@ -318,7 +313,29 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		);
 		
 		if($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
+			// loop each category
 			while($category = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
+				// check if a user is given
+				if(intval($this->userArray['uid'])) {
+					// let's have a look if the user selected current category
+					$resMM = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+						'*',
+						'sys_dmail_feuser_category_mm',
+						'uid_local = ' . $this->userArray['uid'] . '
+						AND uid_foreign = ' . $category['uid'],
+						'', 'sorting', '1'
+					);
+
+					// if the user has current category
+					if($GLOBALS['TYPO3_DB']->sql_num_rows($resMM) > 0) {
+						$categoryMM = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($resMM);
+						if($categoryMM['uid_foreign'] == $category['uid']) {
+							$category['selected'] = 1;
+						}
+					}
+				}
+
+				t3lib_div::devLog('categories', $this->extKey, -1, $category);
 				$this->cObj->data = $category;
 				$content .= $this->cObj->COBJ_ARRAY($this->conf['categories.']);
 			}

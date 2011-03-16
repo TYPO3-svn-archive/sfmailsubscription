@@ -6,14 +6,20 @@ plugin.tx_sfmailsubscription_pi1 {
 	
 	categories {
 		10 = TEXT
-		10 {
-			field = uid
-			wrap = <div><input type="checkbox" name="tx_sfmailsubscription_pi1[categories][|]" />&nbsp;
-		}
-		20 = TEXT
-		20 {
+		10.value = <div>
+		20 = COA
+		20.10 = TEXT
+		20.10.field = uid
+		20.10.wrap = <input type="checkbox" name="tx_sfmailsubscription_pi1[categories][|]" checked="checked" />
+		20.10.if.isTrue.field = selected
+		20.20 = TEXT
+		20.20.field = uid
+		20.20.wrap = <input type="checkbox" name="tx_sfmailsubscription_pi1[categories][|]" />
+		20.20.if.isFalse.field = selected
+		30 = TEXT
+		30 {
 			field = category
-			wrap = |</div>	
+			wrap = &nbsp;|</div>
 		}
 	}
 }
