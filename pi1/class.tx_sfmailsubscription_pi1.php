@@ -185,6 +185,8 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		// Get Flexformvalues
 		$this->conf['pid'] = $this->fetchConfigurationValue('pid');
 		$this->conf['pid'] = ($this->conf['pid']) ? $this->conf['pid'] : 0;
+		$this->conf['templateFile'] = $this->fetchConfigurationValue('templateFile');
+		$this->conf['templateFile'] = ($this->conf['templateFile']) ? $this->conf['templateFile'] : 'EXT:'.$this->extKey.$this->templateFile;
 		$this->conf['table'] = $this->fetchConfigurationValue('table');
 		$this->conf['table'] = ($this->conf['table']) ? $this->conf['table'] : 'fe_users';
 		$this->conf['userGroup'] = $this->fetchConfigurationValue('userGroup');
@@ -193,7 +195,7 @@ class tx_sfmailsubscription_pi1 extends tslib_pibase {
 		$this->conf['subject'] = $this->fetchConfigurationValue('subject');
 		
 		$this->template['total'] = $this->cObj->fileResource(
-			'EXT:'.$this->extKey.$this->templateFile
+			$this->conf['templateFile']
 		);
 
 		$this->addHeaderPart();
